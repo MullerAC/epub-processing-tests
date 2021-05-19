@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 # other
+files/
+# files folder for other files for testing things besides epubs, like dictionary lists and unpacked epubs
+.gdrive_private
+# .gdrive private to place at 'C:/Users/<username>/.gdrive_private', contains api access data
