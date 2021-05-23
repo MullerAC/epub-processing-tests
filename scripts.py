@@ -36,7 +36,6 @@ def chapters_to_dict(chapters):
         texts[chapter_num] = texts[chapter_num] + ' ' + chapter_to_str(c)
     
     return texts
-    
 
 def chapter_to_str(chapter):
     soup = BeautifulSoup(chapter.get_body_content(), 'html.parser')
