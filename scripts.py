@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import ebooklib
 from ebooklib import epub
 import spacy
+import stanza
+#stanza.download('en') # will only need to run this line first time
 import pandas as pd
 
 def get_chapters(file_name):
@@ -44,13 +46,23 @@ def chapter_to_str(chapter):
     return ' '.join(text)
 
 def find_names(text):
-    nlp = spacy.load("en_core_web_sm")
+    nlp = spacy.load('en_core_web_sm')
     doc = nlp(text)
     
     proper_nouns = []
     for token in doc:
         if str(token.tag_) == 'NNP':
             proper_nouns.append(token.text)
+            
+    return list(set(proper_nouns))
+
+def find_names_stanza(text, nlp):
+    doc = nlp(text)
+    
+    proper_nouns = []
+    for word in doc.ents:
+        if 'PERSON' in word.type:
+            proper_nouns.append(word.text)
             
     return list(set(proper_nouns))
 
@@ -80,14 +92,19 @@ def find_names(text):
     return list(set(names))
 """ 
  
-def find_all_names(texts, verbose=False):
+def find_all_names(texts, verbose=False, use_stanza=False):
     names = []
     keys = sorted(texts.keys())
+    if use_stanza:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,ner', logging_level='FATAL')
     
     for key in keys:
         if verbose:
             print(f'starting chapter {str(key)} of {keys[-1]}')
-        names.extend(find_names(texts[key]))
+        if use_stanza:
+            names.extend(find_names_stanza(texts[key], nlp))
+        else:
+            names.extend(find_names(texts[key]))
 
     return list(set(names))
 
