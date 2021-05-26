@@ -103,25 +103,42 @@ def find_last(word, texts):
         if word in texts[key]:
             return (key, round(100*texts[key].rfind(word)/len(texts[key])))
         
+def find_all(words, texts):
+    positions = []
+    keys = sorted(texts.keys())
+    for key in keys:
+        for word in words:
+            if word in texts[key]:
+                positions.append((key, round(100*texts[key].find(word)/len(texts[key]))))
+    
+    if positions == []:
+        return [(0, 0)]
+    return sorted(positions)
+        
 def find_first_and_last(names, texts):
     rows = []
     for name in names:
         row = {}
         row['name'] = name
         
-        first_ch, first_pos = find_first(name, texts)
-        row['first_chapter'] = first_ch
-        row['first_position'] = first_pos
+        positions = find_all(name.split('|'), texts)
+        #first_ch, first_pos = find_first(name, texts)
+        row['first_chapter'] = positions[0][0]
+        row['first_position'] = positions[0][-1]
         
-        last_ch, last_pos = find_last(name, texts)
-        row['last_chapter'] = last_ch
-        row['last_position'] = last_pos
+        #last_ch, last_pos = find_last(name, texts)
+        row['last_chapter'] = positions[-1][0]
+        row['last_position'] = positions[-1][-1]
         
         rows.append(row)
     
     return sorted(rows, key = lambda x: (x['first_chapter'], x['first_position']))
 
 def find_words_between(row, texts):
+    if row['first_chapter']==0 or row['last_chapter']==0:
+        row['words_between'] = 0
+        return row
+        
     distance = 0
     first_pos = texts[row['first_chapter']].find(row['name'])
     last_pos = texts[row['last_chapter']].rfind(row['name'])
@@ -143,6 +160,10 @@ def find_words_between(row, texts):
     return row
 
 def find_words_after(row, texts):
+    if row['first_chapter']==0 or row['last_chapter']==0:
+        row['words_after'] = 0
+        return row
+    
     last_pos = texts[row['last_chapter']].rfind(row['name'])
     distance = len(texts[row['last_chapter']][last_pos:].split()) - 1
     
@@ -155,11 +176,13 @@ def find_words_after(row, texts):
     return row
     
 
-def get_data(filename):
+def get_data(filename, names=None):
     texts = chapters_to_dict(get_chapters(filename))
-    names = find_all_names(texts)
+    if names is None:
+        names = find_all_names(texts)
     df = pd.DataFrame(find_first_and_last(names, texts))
     df = df.apply(lambda row: find_words_between(row, texts), axis=1)
     df = df.apply(lambda row: find_words_after(row, texts), axis=1)
-    
+    df['name'] = df['name'].map(lambda x: x.replace('|', ' '))
+                    
     return df
