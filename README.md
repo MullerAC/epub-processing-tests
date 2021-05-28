@@ -7,7 +7,7 @@ Using various NLP libraries to attempt NER to recognize characters in a book. Re
 #### NLTK NER
 - slowest of all NER I've tries, far slower than all others
 - least accurate of all I've tried
-- - has different NER models built in: I tried Senna
+- has different NER models built in: I tried Senna mostly
 
 #### spacy NER
 - fastest of all 3
